@@ -28,6 +28,7 @@ WordpressPharoAPI >> basePath: anObject [
 { #category : #'api - posts' }
 WordpressPharoAPI >> createPost: aWPPost [
 
+	self resetZnClient.
 	znClient contentReader: [ :entity |
 		reader
 			on: entity contents readStream;
@@ -51,6 +52,7 @@ WordpressPharoAPI >> endpoint: anObject [
 { #category : #'api - posts' }
 WordpressPharoAPI >> getPosts [
 
+	self resetZnClient.
 	self rawData ifFalse: [
 		znClient contentReader: [ :entity |
 			reader
@@ -58,6 +60,29 @@ WordpressPharoAPI >> getPosts [
 				nextAs: #ArrayOfWPPost ] ].
 
 	^ (znClient path: self basePath , '/posts') get
+]
+
+{ #category : #'api - users' }
+WordpressPharoAPI >> getUsers [
+
+	self resetZnClient.
+	^ self getUsersNumberPerPage: nil
+]
+
+{ #category : #'api - users' }
+WordpressPharoAPI >> getUsersNumberPerPage: numberPerPage [
+
+	self resetZnClient.
+	self rawData ifFalse: [
+		znClient contentReader: [ :entity |
+			reader
+				on: entity contents readStream;
+				nextAs: #ArrayOfWPUser ] ].
+	znClient path: self basePath , '/users'.
+	numberPerPage ifNotNil: [ :bodyFormat |
+		znClient queryAt: #per_page put: numberPerPage ].
+
+	^ znClient get
 ]
 
 { #category : #initialization }
@@ -68,13 +93,21 @@ WordpressPharoAPI >> initReader [
 		mapping mapAllInstVars.
 		(mapping mapInstVar: #date) valueSchema: DateAndTime ].
 
+	reader for: WPUser do: [ :mapping |
+		mapping mapAllInstVars.
+		(mapping mapInstVar: #registered_date) valueSchema: DateAndTime ].
+
 	reader for: DateAndTime customDo: [ :mapping |
 		mapping decoder: [ :string | DateAndTime fromString: string ].
 		mapping encoder: [ :dateAndTime | dateAndTime printString ] ].
 
 	reader
 		for: #ArrayOfWPPost
-		customDo: [ :mapping | mapping listOfElementSchema: WPPost ]
+		customDo: [ :mapping | mapping listOfElementSchema: WPPost ].
+
+	reader
+		for: #ArrayOfWPUser
+		customDo: [ :mapping | mapping listOfElementSchema: WPUser ]
 ]
 
 { #category : #initialization }
@@ -126,6 +159,12 @@ WordpressPharoAPI >> rawData [
 WordpressPharoAPI >> rawData: anObject [
 
 	rawData := anObject
+]
+
+{ #category : #configuration }
+WordpressPharoAPI >> resetZnClient [
+
+	znClient request url queryRemoveAll
 ]
 
 { #category : #configuration }
