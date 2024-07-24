@@ -29,3 +29,16 @@ wordpressAPI username: '<myusername>' password: '<mypassword>'.
 ```smalltalk
 wordpressAPI getPosts
 ```
+
+### Publish a post
+
+```smalltalk
+myPost := WPPost new.
+myPost date: DateAndTime tomorrow.
+myPost status: 'draft'.
+myPost title: 'FirstTest'.
+myPost author: 28.
+myPost content: 'First content'.
+
+wordpressAPI createPost: myPost.
+```
