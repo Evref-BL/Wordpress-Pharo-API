@@ -128,6 +128,15 @@ WPUser >> nickname: anObject [
 ]
 
 { #category : #accessing }
+WPUser >> printOn: aStream [
+
+	aStream nextPutAll: name.
+	aStream nextPutAll: ' ('.
+	id printOn: aStream.
+	aStream nextPutAll: ')'
+]
+
+{ #category : #accessing }
 WPUser >> registered_date [
 
 	^ registered_date
