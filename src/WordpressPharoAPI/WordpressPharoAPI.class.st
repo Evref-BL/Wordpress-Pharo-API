@@ -7,7 +7,8 @@ Class {
 		'endpoint',
 		'basePath',
 		'reader',
-		'rawData'
+		'rawData',
+		'writer'
 	],
 	#category : #WordpressPharoAPI
 }
@@ -22,6 +23,17 @@ WordpressPharoAPI >> basePath [
 WordpressPharoAPI >> basePath: anObject [
 
 	basePath := anObject
+]
+
+{ #category : #'api - posts' }
+WordpressPharoAPI >> createPost: aWPPost [
+
+	znClient contentReader: [ :entity |
+		reader
+			on: entity contents readStream;
+			nextAs: WPPost ].
+	znClient contents: aWPPost.
+	^ (znClient path: self basePath , '/posts') post
 ]
 
 { #category : #accessing }
@@ -66,6 +78,20 @@ WordpressPharoAPI >> initReader [
 ]
 
 { #category : #initialization }
+WordpressPharoAPI >> initWriter [
+
+	writer := NeoJSONWriter new.
+	writer for: WPPost do: [ :mapping | mapping mapAllInstVars ].
+	writer for: DateAndTime customDo: [ :mapping |
+		mapping encoder: [ :dateAndTime | dateAndTime printString ] ].
+	znClient contentWriter: [ :data |
+		ZnEntity json: (String streamContents: [ :str |
+				 writer
+					 on: str;
+					 nextPut: data ]) ]
+]
+
+{ #category : #initialization }
 WordpressPharoAPI >> initialize [
 
 	super initialize.
@@ -74,7 +100,8 @@ WordpressPharoAPI >> initialize [
 	znClient https.
 	rawData := false.
 	self basePath: '/wp-json/wp/v2'.
-	self initReader
+	self initReader.
+	self initWriter
 ]
 
 { #category : #accessing }
