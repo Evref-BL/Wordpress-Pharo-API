@@ -25,6 +25,19 @@ WordpressPharoAPI >> basePath: anObject [
 	basePath := anObject
 ]
 
+{ #category : #'api - media' }
+WordpressPharoAPI >> createMedia: aWPMedia [
+
+	self resetZnClient.
+	znClient contentReader: [ :entity |
+		reader
+			on: entity contents readStream;
+			nextAs: WPMedia ].
+	znClient addPart:
+		(ZnMimePart fieldName: #file fileNamed: aWPMedia data).
+	^ (znClient path: self basePath , '/media') post
+]
+
 { #category : #'api - posts' }
 WordpressPharoAPI >> createPost: aWPPost [
 
@@ -93,6 +106,8 @@ WordpressPharoAPI >> initReader [
 		mapping mapAllInstVars.
 		(mapping mapInstVar: #date) valueSchema: DateAndTime ].
 
+	reader for: WPMedia do: [ :mapping | mapping mapAllInstVars ].
+
 	reader for: WPUser do: [ :mapping |
 		mapping mapAllInstVars.
 		(mapping mapInstVar: #registered_date) valueSchema: DateAndTime ].
@@ -115,8 +130,11 @@ WordpressPharoAPI >> initWriter [
 
 	writer := NeoJSONWriter new.
 	writer for: WPPost do: [ :mapping | mapping mapAllInstVars ].
+
+	writer for: WPMedia do: [ :mapping | mapping mapAllInstVars ].
 	writer for: DateAndTime customDo: [ :mapping |
 		mapping encoder: [ :dateAndTime | dateAndTime printString ] ].
+
 	znClient contentWriter: [ :data |
 		ZnEntity json: (String streamContents: [ :str |
 				 writer
