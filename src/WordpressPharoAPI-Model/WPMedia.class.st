@@ -78,13 +78,13 @@ WPMedia >> comment_status: anObject [
 
 { #category : #accessing }
 WPMedia >> data [
-
+	"A file reference when creating a new media"
 	^ data
 ]
 
 { #category : #accessing }
 WPMedia >> data: anObject [
-
+	"A file reference when creating a new media"
 	data := anObject
 ]
 

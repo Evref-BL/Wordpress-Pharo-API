@@ -34,7 +34,7 @@ WordpressPharoAPI >> createMedia: aWPMedia [
 			on: entity contents readStream;
 			nextAs: WPMedia ].
 	znClient addPart:
-		(ZnMimePart fieldName: #file fileNamed: aWPMedia data).
+		(ZnMimePart fieldName: #file fileNamed: aWPMedia data pathString).
 	^ (znClient path: self basePath , '/media') post
 ]
 
@@ -182,7 +182,8 @@ WordpressPharoAPI >> rawData: anObject [
 { #category : #configuration }
 WordpressPharoAPI >> resetZnClient [
 
-	znClient request url queryRemoveAll
+	znClient request url queryRemoveAll.
+	znClient request entity: nil
 ]
 
 { #category : #configuration }
