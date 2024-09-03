@@ -8,7 +8,9 @@ Class {
 		'basePath',
 		'reader',
 		'rawData',
-		'writer'
+		'writer',
+		'restRoute',
+		'withPermalink'
 	],
 	#category : #WordpressPharoAPI
 }
@@ -35,7 +37,8 @@ WordpressPharoAPI >> createMedia: aWPMedia [
 			nextAs: WPMedia ].
 	znClient addPart:
 		(ZnMimePart fieldName: #file fileNamed: aWPMedia data pathString).
-	^ (znClient path: self basePath , '/media') post
+	self setPathTo: '/media'.
+	^ znClient post
 ]
 
 { #category : #'api - posts' }
@@ -47,7 +50,8 @@ WordpressPharoAPI >> createPost: aWPPost [
 			on: entity contents readStream;
 			nextAs: WPPost ].
 	znClient contents: aWPPost.
-	^ (znClient path: self basePath , '/posts') post
+	self setPathTo: '/posts'.
+	^ znClient post
 ]
 
 { #category : #accessing }
@@ -71,8 +75,8 @@ WordpressPharoAPI >> getPosts [
 			reader
 				on: entity contents readStream;
 				nextAs: #ArrayOfWPPost ] ].
-
-	^ (znClient path: self basePath , '/posts') get
+	self setPathTo: '/posts'.
+	^ znClient get
 ]
 
 { #category : #'api - users' }
@@ -91,7 +95,7 @@ WordpressPharoAPI >> getUsersNumberPerPage: numberPerPage [
 			reader
 				on: entity contents readStream;
 				nextAs: #ArrayOfWPUser ] ].
-	znClient path: self basePath , '/users'.
+	self setPathTo: '/wp/v2/users'.
 	numberPerPage ifNotNil: [ :bodyFormat |
 		znClient queryAt: #per_page put: numberPerPage ].
 
@@ -150,7 +154,9 @@ WordpressPharoAPI >> initialize [
 	znClient forJsonREST.
 	znClient https.
 	rawData := false.
-	self basePath: '/wp-json/wp/v2'.
+	withPermalink := true.
+	self basePath: '/wp-json'.
+	self restRoute: '/'.
 	self initReader.
 	self initWriter
 ]
@@ -186,10 +192,44 @@ WordpressPharoAPI >> resetZnClient [
 	znClient request entity: nil
 ]
 
+{ #category : #accessing }
+WordpressPharoAPI >> restRoute [
+
+	^ restRoute
+]
+
+{ #category : #accessing }
+WordpressPharoAPI >> restRoute: anObject [
+
+	restRoute := anObject
+]
+
+{ #category : #accessing }
+WordpressPharoAPI >> setPathTo: pathToSet [
+
+	withPermalink
+		ifTrue: [ znClient path: self basePath , pathToSet ]
+		ifFalse: [
+			znClient path: '/'.
+			znClient queryAt: #rest_route put: pathToSet ]
+]
+
 { #category : #configuration }
 WordpressPharoAPI >> username: username password: password [
 
 	self znClient username: username password: password
+]
+
+{ #category : #accessing }
+WordpressPharoAPI >> withPermalink [
+
+	withPermalink := true
+]
+
+{ #category : #accessing }
+WordpressPharoAPI >> withoutPermalink [
+
+	withPermalink := false
 ]
 
 { #category : #accessing }
