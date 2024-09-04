@@ -37,7 +37,7 @@ WordpressPharoAPI >> createMedia: aWPMedia [
 			nextAs: WPMedia ].
 	znClient addPart:
 		(ZnMimePart fieldName: #file fileNamed: aWPMedia data pathString).
-	self setPathTo: '/media'.
+	self setPathTo: '/wp/v2/media'.
 	^ znClient post
 ]
 
@@ -50,7 +50,7 @@ WordpressPharoAPI >> createPost: aWPPost [
 			on: entity contents readStream;
 			nextAs: WPPost ].
 	znClient contents: aWPPost.
-	self setPathTo: '/posts'.
+	self setPathTo: '/wp/v2/posts'.
 	^ znClient post
 ]
 
@@ -75,7 +75,7 @@ WordpressPharoAPI >> getPosts [
 			reader
 				on: entity contents readStream;
 				nextAs: #ArrayOfWPPost ] ].
-	self setPathTo: '/posts'.
+	self setPathTo: '/wp/v2/posts'.
 	^ znClient get
 ]
 
